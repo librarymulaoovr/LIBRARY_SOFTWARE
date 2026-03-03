@@ -1,0 +1,30 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import Navigation from '@/components/layout/Navigation';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'ADHIL Library',
+  description: 'ADHIL Library Management System',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${inter.className} min-h-screen flex`}>
+        <Navigation />
+        <main className="flex-1 flex flex-col min-h-screen">
+          <div className="flex-1 w-full">
+            {children}
+          </div>
+        </main>
+      </body>
+    </html>
+  );
+}
