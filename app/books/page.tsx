@@ -4,116 +4,236 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, UploadCloud, PlusCircle, Edit } from "lucide-react";
-import { useState } from "react";
+import { Trash2, UploadCloud, PlusCircle, Edit, Search } from "lucide-react";
+import { useState, useRef } from "react";
+import { addBook, updateBook, deleteBooks, getBookByBarcode } from "@/lib/supabase/actions";
 
 export default function BookManagementPage() {
     const [isEditing, setIsEditing] = useState(false);
+
+    // UI States
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    // Form Refs
+    const formRef = useRef<HTMLFormElement>(null);
+
+    // Edit Form specific state
+    const [editBarcodeToSearch, setEditBarcodeToSearch] = useState("");
+    const [originalBarcode, setOriginalBarcode] = useState("");
+
+    // Current Book Data
+    const [bookData, setBookData] = useState({
+        title: "", author: "", language: "", category: "", shelf_location: "", call_number: "", barcode: ""
+    });
+
+    const resetForm = () => {
+        setBookData({ title: "", author: "", language: "", category: "", shelf_location: "", call_number: "", barcode: "" });
+        setOriginalBarcode("");
+        setEditBarcodeToSearch("");
+        if (formRef.current) formRef.current.reset();
+    };
+
+    const handleSearchForEdit = async () => {
+        if (!editBarcodeToSearch) return;
+        setLoading(true);
+        setMessage(null);
+
+        const res = await getBookByBarcode(editBarcodeToSearch);
+        if (res.error) {
+            setMessage({ type: 'error', text: res.error });
+            resetForm();
+        } else if (res.book) {
+            setBookData({
+                title: res.book.title || "",
+                author: res.book.author || "",
+                language: res.book.language || "",
+                category: res.book.category || "",
+                shelf_location: res.book.shelf_location || "",
+                call_number: res.book.call_number || "",
+                barcode: res.book.barcode || "",
+            });
+            setOriginalBarcode(res.book.barcode);
+            setMessage({ type: 'success', text: "Book found! You can now edit its details." });
+        }
+        setLoading(false);
+    };
+
+    const handleFormSubmit = async (formData: FormData) => {
+        setLoading(true);
+        setMessage(null);
+
+        // Ensure select values are passed properly
+        if (bookData.language) formData.set("language", bookData.language);
+        if (bookData.category) formData.set("category", bookData.category);
+
+        let res;
+        if (isEditing) {
+            if (!originalBarcode) {
+                setMessage({ type: 'error', text: "Search for a book first before saving edits." });
+                setLoading(false);
+                return;
+            }
+            res = await updateBook(originalBarcode, formData);
+        } else {
+            res = await addBook(formData);
+        }
+
+        if (res.error) {
+            setMessage({ type: 'error', text: res.error });
+        } else if (res.success) {
+            setMessage({ type: 'success', text: isEditing ? "Book successfully updated!" : "Book successfully added!" });
+            if (!isEditing) resetForm(); // Keep form populated if editing, reset if adding
+        }
+        setLoading(false);
+    };
+
+    const handleDelete = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const barcodesToDelete = fd.get("barcodesToDelete") as string;
+
+        if (!barcodesToDelete) {
+            setMessage({ type: 'error', text: "Please enter barcodes to delete." });
+            return;
+        }
+
+        setLoading(true);
+        setMessage(null);
+        const res = await deleteBooks(barcodesToDelete);
+
+        if (res.error) {
+            setMessage({ type: 'error', text: res.error });
+        } else if (res.success) {
+            setMessage({ type: 'success', text: res.message || "Books deleted successfully." });
+            (e.target as HTMLFormElement).reset();
+        }
+        setLoading(false);
+    };
+
     return (
         <div className="space-y-6 w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8 pt-20 md:pt-24">
             <h1 className="text-3xl font-bold tracking-tight">BOOK MANAGEMENT</h1>
+
+            {message && (
+                <div className={`p-4 rounded-md font-medium text-sm ${message.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200'}`}>
+                    {message.text}
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Add/Edit Single Book */}
                 <Card className={`border-t-4 shadow-sm transition-colors ${isEditing ? 'border-t-blue-500' : 'border-t-yellow-400'}`}>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            {isEditing ? (
-                                <>
-                                    <Edit size={20} className="text-blue-500" />
-                                    UPDATE BOOK DETAILS
-                                </>
-                            ) : (
-                                <>
-                                    <PlusCircle size={20} className="text-yellow-500" />
-                                    ADD SINGLE BOOK
-                                </>
-                            )}
+                        <CardTitle className="flex items-center justify-between">
+                            <span className="flex items-center gap-2">
+                                {isEditing ? <Edit size={20} className="text-blue-500" /> : <PlusCircle size={20} className="text-yellow-500" />}
+                                {isEditing ? "UPDATE BOOK DETAILS" : "ADD SINGLE BOOK"}
+                            </span>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-2">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</label>
-                                <Input placeholder="Title" />
+
+                        {isEditing && (
+                            <div className="flex gap-2 mb-6 pb-6 border-b border-gray-100">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                    <Input
+                                        placeholder="Enter Barcode to fetch book..."
+                                        className="pl-9"
+                                        value={editBarcodeToSearch}
+                                        onChange={(e) => setEditBarcodeToSearch(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSearchForEdit()}
+                                    />
+                                </div>
+                                <Button onClick={handleSearchForEdit} disabled={loading} variant="secondary">Search</Button>
+                            </div>
+                        )}
+
+                        <form ref={formRef} action={handleFormSubmit} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Title *</label>
+                                    <Input name="title" placeholder="Title" required value={bookData.title} onChange={e => setBookData({ ...bookData, title: e.target.value })} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Author *</label>
+                                    <Input name="author" placeholder="Author" required value={bookData.author} onChange={e => setBookData({ ...bookData, author: e.target.value })} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Language</label>
+                                    <Select name="language" value={bookData.language} onValueChange={v => setBookData({ ...bookData, language: v })}>
+                                        <SelectTrigger><SelectValue placeholder="Select Lang" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Malayalam">Malayalam</SelectItem>
+                                            <SelectItem value="English">English</SelectItem>
+                                            <SelectItem value="Arabic">Arabic</SelectItem>
+                                            <SelectItem value="Urdu">Urdu</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</label>
+                                    <Select name="category" value={bookData.category} onValueChange={v => setBookData({ ...bookData, category: v })}>
+                                        <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Novel">Novel</SelectItem>
+                                            <SelectItem value="Story">Story</SelectItem>
+                                            <SelectItem value="Poetry">Poetry</SelectItem>
+                                            <SelectItem value="Academic">Academic</SelectItem>
+                                            <SelectItem value="Reference">Reference</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Shelf Loc.</label>
+                                    <Input name="shelf_location" placeholder="e.g., A1" value={bookData.shelf_location} onChange={e => setBookData({ ...bookData, shelf_location: e.target.value })} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Call Number</label>
+                                    <Input name="call_number" placeholder="Call Number" value={bookData.call_number} onChange={e => setBookData({ ...bookData, call_number: e.target.value })} />
+                                </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Author</label>
-                                <Input placeholder="Author" />
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Barcode *</label>
+                                <Input name="barcode" placeholder="Unique Barcode" required value={bookData.barcode} onChange={e => setBookData({ ...bookData, barcode: e.target.value })} />
                             </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Language</label>
-                                <Select>
-                                    <SelectTrigger><SelectValue placeholder="Select Lang" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="MAL">Malayalam (MAL)</SelectItem>
-                                        <SelectItem value="ENG">English (ENG)</SelectItem>
-                                        <SelectItem value="ARB">Arabic (ARB)</SelectItem>
-                                        <SelectItem value="URD">Urdu (URD)</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="pt-2">
+                                <Button type="submit" disabled={loading} className={`w-full font-bold text-black ${isEditing ? 'bg-blue-400 hover:bg-blue-500 text-white' : 'bg-yellow-400 hover:bg-yellow-500'}`}>
+                                    {loading ? "Processing..." : (isEditing ? "SAVE CHANGES" : "ADD BOOK")}
+                                </Button>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</label>
-                                <Select>
-                                    <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="novel">Novel</SelectItem>
-                                        <SelectItem value="story">Story</SelectItem>
-                                        <SelectItem value="poetry">Poetry</SelectItem>
-                                        <SelectItem value="academic">Academic</SelectItem>
-                                        <SelectItem value="reference">Reference</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Shelf Location</label>
-                                <Input placeholder="e.g., A1" />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Call Number</label>
-                                <Input placeholder="Call Number" />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Barcode</label>
-                                <Input placeholder="Barcode" />
-                            </div>
-                        </div>
-                        <div className="pt-2">
-                            <Button className={`w-full font-bold text-black ${isEditing ? 'bg-blue-400 hover:bg-blue-500 text-white' : 'bg-yellow-400 hover:bg-yellow-500'}`}>
-                                {isEditing ? "SAVE CHANGES" : "ADD BOOK"}
-                            </Button>
-                        </div>
-                        <div className="text-center mt-2 border-t pt-2">
+                        </form>
+
+                        <div className="text-center mt-2 border-t pt-4">
                             <button
-                                onClick={() => setIsEditing(!isEditing)}
-                                className="text-sm font-semibold text-blue-600 underline cursor-pointer hover:text-blue-800"
+                                onClick={() => { setIsEditing(!isEditing); resetForm(); setMessage(null); }}
+                                className="text-sm font-semibold text-blue-600 hover:underline cursor-pointer hover:text-blue-800"
                             >
-                                {isEditing ? "Switch to Add New Book instead" : "Update Book Details instead"}
+                                {isEditing ? "Cancel Edit (Switch to Add New Book)" : "Need to edit an existing book?"}
                             </button>
                         </div>
                     </CardContent>
                 </Card>
 
                 <div className="space-y-8">
-                    {/* Bulk Upload */}
-                    <Card className="shadow-sm">
+                    {/* Bulk Upload (Mockup) */}
+                    <Card className="shadow-sm opacity-60">
                         <CardHeader className="pb-4">
                             <CardTitle className="flex items-center gap-2">
                                 <UploadCloud size={20} className="text-gray-600" />
-                                BULK UPLOAD BOOKS
+                                BULK UPLOAD BOOKS (Coming Soon)
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="border-2 border-dashed border-gray-300 bg-gray-50 rounded-lg p-10 text-center flex flex-col items-center justify-center hover:bg-gray-100 transition-colors cursor-pointer">
+                            <div className="border-2 border-dashed border-gray-300 bg-gray-50 rounded-lg p-10 text-center flex flex-col items-center justify-center cursor-not-allowed">
                                 <UploadCloud className="text-gray-400 mb-2" size={36} />
                                 <p className="text-sm font-medium text-gray-600">Drag & Drop CSV/Excel file here</p>
-                                <p className="text-xs text-gray-400 mt-1">or click to browse</p>
-                                <Button variant="outline" className="mt-4 border-gray-300">Browse Files</Button>
+                                <Button variant="outline" disabled className="mt-4 border-gray-300">Browse Files</Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -127,13 +247,15 @@ export default function BookManagementPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex gap-4 items-end">
+                            <form onSubmit={handleDelete} className="flex gap-4 items-end">
                                 <div className="flex-1 space-y-2">
                                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Barcodes</label>
-                                    <Input placeholder="Enter Barcode(s) comma separated" className="bg-white border-red-100 focus-visible:ring-red-400 text-red-900" />
+                                    <Input name="barcodesToDelete" required placeholder="Enter Barcode(s) comma separated" className="bg-white border-red-100 focus-visible:ring-red-400 text-red-900" />
                                 </div>
-                                <Button className="bg-red-600 hover:bg-red-700 text-white font-bold px-6">DELETE</Button>
-                            </div>
+                                <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700 text-white font-bold px-6">
+                                    {loading ? "..." : "DELETE"}
+                                </Button>
+                            </form>
                         </CardContent>
                     </Card>
                 </div>

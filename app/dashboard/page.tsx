@@ -1,20 +1,39 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase/server";
 
-const mockStats = {
-    totalBooks: 6359,
-    byLanguage: { Malayalam: 2100, English: 2500, Urdu: 800, Arabic: 959 },
-    totalMembers: 199,
-    borrowedNow: 128,
-};
+export default async function DashboardPage() {
+    const supabase = await createClient();
 
-const dueTomorrow = [
-    { id: 1, title: 'The Alchemist', member: 'John Doe', barcode: 'B-1029' },
-    { id: 2, title: 'Introduction to Algorithms', member: 'Jane Smith', barcode: 'B-4402' },
-];
+    // Fetch Total Books
+    const { count: totalBooks } = await supabase
+        .from('books')
+        .select('*', { count: 'exact', head: true });
 
-export default function DashboardPage() {
+    // Fetch Total Members
+    const { count: totalMembers } = await supabase
+        .from('members')
+        .select('*', { count: 'exact', head: true });
+
+    // Fetch Currently Borrowed
+    const { count: borrowedNow } = await supabase
+        .from('loans')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'borrowed');
+
+    // For demo purposes, fetch some active loans (usually we'd filter by due_date)
+    const { data: activeLoans } = await supabase
+        .from('loans')
+        .select(`
+            id,
+            due_date,
+            books ( title, isbn ),
+            members ( full_name )
+        `)
+        .eq('status', 'borrowed')
+        .limit(5);
+
     return (
         <div className="space-y-6 w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8 pt-16 md:pt-20">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-white rounded-lg shadow-sm border border-gray-100">
@@ -28,8 +47,8 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium uppercase text-gray-500">Total Books</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{mockStats.totalBooks}</div>
-                        <p className="text-xs text-gray-500 mt-1">MAL: {mockStats.byLanguage.Malayalam} | ENG: {mockStats.byLanguage.English}</p>
+                        <div className="text-3xl font-bold">{totalBooks || 0}</div>
+                        <p className="text-xs text-gray-500 mt-1">Catalog items across all categories</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -37,7 +56,7 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium uppercase text-gray-500">Total Members</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{mockStats.totalMembers}</div>
+                        <div className="text-3xl font-bold">{totalMembers || 0}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -45,7 +64,7 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium uppercase text-gray-500">Borrowed Now</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-blue-600">{mockStats.borrowedNow}</div>
+                        <div className="text-3xl font-bold text-blue-600">{borrowedNow || 0}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -53,29 +72,41 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>DUE TOMORROW</CardTitle>
+                        <CardTitle>RECENT ACTIVE LOANS</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Book</TableHead>
-                                    <TableHead>Member</TableHead>
-                                    <TableHead>Barcode</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {dueTomorrow.map((item) => (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.title}</TableCell>
-                                        <TableCell>{item.member}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline">{item.barcode}</Badge>
-                                        </TableCell>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Book</TableHead>
+                                        <TableHead>Member</TableHead>
+                                        <TableHead>Due Date</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {activeLoans && activeLoans.length > 0 ? (
+                                        activeLoans.map((loan: any) => (
+                                            <TableRow key={loan.id}>
+                                                <TableCell className="font-medium">{loan.books?.title || 'Unknown'}</TableCell>
+                                                <TableCell>{loan.members?.full_name || 'Unknown'}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline">
+                                                        {new Date(loan.due_date).toLocaleDateString()}
+                                                    </Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-center py-4 text-gray-500">
+                                                No active loans found.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 </Card>
 
