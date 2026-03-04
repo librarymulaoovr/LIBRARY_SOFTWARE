@@ -1,29 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileSpreadsheet, Search } from "lucide-react";
-
-// Mock Data
-const mockTransactions = [
-    { id: "TRX-001", bookTitle: "The Alchemist", barcode: "B-1029", memberName: "John Doe", memberId: "M-5001", type: "Check Out", date: "2023-10-25", dueDate: "2023-11-08", status: "Borrowed" },
-    { id: "TRX-002", bookTitle: "Introduction to Algorithms", barcode: "B-4402", memberName: "Jane Smith", memberId: "M-5002", type: "Check Out", date: "2023-10-20", dueDate: "2023-11-03", status: "Borrowed" },
-    { id: "TRX-003", bookTitle: "The Pragmatic Programmer", barcode: "B-3199", memberName: "Ali Hasan", memberId: "M-5003", type: "Check In", date: "2023-10-28", dueDate: "2023-10-30", status: "Returned" },
-    { id: "TRX-004", bookTitle: "Clean Code", barcode: "B-2211", memberName: "John Doe", memberId: "M-5001", type: "Check In", date: "2023-10-15", dueDate: "2023-10-15", status: "Returned" },
-    { id: "TRX-005", bookTitle: "Design Patterns", barcode: "B-5533", memberName: "Jane Smith", memberId: "M-5002", type: "Check Out", date: "2023-09-10", dueDate: "2023-09-24", status: "Overdue" },
-];
+import { FileSpreadsheet, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { getAllTransactions } from "@/lib/supabase/actions";
 
 export default function CirculationHistoryPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(7);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        async function fetchHistory() {
+            setLoading(true);
+            const data = await getAllTransactions();
+            const formatted = data.map((t: any) => ({
+                id: t.id.split('-')[0].toUpperCase(),
+                bookTitle: t.books?.title || "Unknown Book",
+                barcode: t.books?.barcode || "Unknown",
+                memberName: t.members?.full_name || "Unknown Member",
+                memberId: t.members?.barcode || "Unknown",
+                type: t.status === "Returned" ? "Check In" : "Check Out",
+                date: new Date(t.borrow_date).toLocaleDateString(),
+                dueDate: new Date(t.due_date).toLocaleDateString(),
+                status: t.status === "Borrowed" && new Date(t.due_date) < new Date() ? "Overdue" : t.status
+            }));
+            setTransactions(formatted);
+            setLoading(false);
+        }
+        fetchHistory();
+    }, []);
 
     // Filter Logic
-    const filteredTransactions = mockTransactions.filter((trx) => {
+    const filteredTransactions = transactions.filter((trx) => {
         const matchesSearch =
             trx.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
             trx.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -34,6 +54,39 @@ export default function CirculationHistoryPage() {
 
         return matchesSearch && matchesStatus;
     });
+
+    useEffect(() => {
+        // Handle responsive pagination
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 640);
+        };
+
+        checkMobile(); // Check on mount
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Effect to update itemsPerPage based on mobile state and total records
+    useEffect(() => {
+        if (isMobile) {
+            // Show all transactions on mobile
+            setItemsPerPage(Math.max(1, filteredTransactions.length));
+        } else {
+            // Default 7 on desktop
+            setItemsPerPage(7);
+        }
+    }, [isMobile, transactions.length, filteredTransactions.length]);
+
+    // Reset to page 1 when search query or filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus]);
+
+    const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+    const paginatedTransactions = filteredTransactions.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     // CSV Download Logic
     const handleDownloadExcel = () => {
@@ -105,61 +158,101 @@ export default function CirculationHistoryPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="bg-white rounded-md border min-w-[800px]">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-gray-50">
-                                    <TableHead className="font-bold">TRX ID</TableHead>
-                                    <TableHead className="font-bold min-w-[200px]">BOOK</TableHead>
-                                    <TableHead className="font-bold">MEMBER</TableHead>
-                                    <TableHead className="font-bold">TYPE</TableHead>
-                                    <TableHead className="font-bold">DATE</TableHead>
-                                    <TableHead className="font-bold">STATUS</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredTransactions.length > 0 ? (
-                                    filteredTransactions.map((trx) => (
-                                        <TableRow key={trx.id}>
-                                            <TableCell className="font-mono text-xs text-gray-500">{trx.id}</TableCell>
-                                            <TableCell>
-                                                <p className="font-medium">{trx.bookTitle}</p>
-                                                <p className="text-xs text-gray-500">{trx.barcode}</p>
-                                            </TableCell>
-                                            <TableCell>
-                                                <p className="font-medium">{trx.memberName}</p>
-                                                <p className="text-xs text-gray-500">{trx.memberId}</p>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className={trx.type === 'Check Out' ? 'border-orange-200 text-orange-700 bg-orange-50' : 'border-blue-200 text-blue-700 bg-blue-50'}>
-                                                    {trx.type}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <p className="text-sm">{trx.date}</p>
-                                                <p className="text-xs text-gray-500">Due: {trx.dueDate}</p>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="secondary" className={
-                                                    trx.status === 'Borrowed' ? 'bg-yellow-100 text-yellow-800' :
-                                                        trx.status === 'Returned' ? 'bg-green-100 text-green-800' :
-                                                            'bg-red-100 text-red-800'
-                                                }>
-                                                    {trx.status}
-                                                </Badge>
+                    <div className="bg-white rounded-md border overflow-hidden">
+                        <div className="overflow-x-auto sm:overflow-x-auto max-h-[65vh] overflow-y-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-gray-50">
+                                        <TableHead className="font-bold whitespace-nowrap">TRX ID</TableHead>
+                                        <TableHead className="font-bold whitespace-nowrap min-w-[200px]">BOOK</TableHead>
+                                        <TableHead className="font-bold whitespace-nowrap">MEMBER</TableHead>
+                                        <TableHead className="font-bold whitespace-nowrap">TYPE</TableHead>
+                                        <TableHead className="font-bold whitespace-nowrap">DATE</TableHead>
+                                        <TableHead className="font-bold whitespace-nowrap text-right">STATUS</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="h-24 text-center text-gray-500">
+                                                Loading transactions...
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center text-gray-500">
-                                            No transactions found matching your criteria.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                    ) : paginatedTransactions.length > 0 ? (
+                                        paginatedTransactions.map((trx) => (
+                                            <TableRow key={trx.id}>
+                                                <TableCell className="font-mono text-xs text-gray-500 whitespace-nowrap">{trx.id}</TableCell>
+                                                <TableCell className="whitespace-nowrap">
+                                                    <p className="font-medium">{trx.bookTitle}</p>
+                                                    <p className="text-xs text-gray-500">{trx.barcode}</p>
+                                                </TableCell>
+                                                <TableCell className="whitespace-nowrap">
+                                                    <p className="font-medium">{trx.memberName}</p>
+                                                    <p className="text-xs text-gray-500">{trx.memberId}</p>
+                                                </TableCell>
+                                                <TableCell className="whitespace-nowrap">
+                                                    <Badge variant="outline" className={trx.type === 'Check Out' ? 'border-orange-200 text-orange-700 bg-orange-50' : 'border-blue-200 text-blue-700 bg-blue-50'}>
+                                                        {trx.type}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="whitespace-nowrap">
+                                                    <p className="text-sm">{trx.date}</p>
+                                                    <p className="text-xs text-gray-500">Due: {trx.dueDate}</p>
+                                                </TableCell>
+                                                <TableCell className="whitespace-nowrap text-right">
+                                                    <Badge variant="secondary" className={
+                                                        trx.status === 'Borrowed' ? 'bg-yellow-100 text-yellow-800' :
+                                                            trx.status === 'Returned' ? 'bg-green-100 text-green-800' :
+                                                                'bg-red-100 text-red-800'
+                                                    }>
+                                                        {trx.status}
+                                                    </Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="h-24 text-center text-gray-500">
+                                                No transactions found matching your criteria.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+                            <div className="text-sm text-center sm:text-left text-gray-500">
+                                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} of {filteredTransactions.length} transactions
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="bg-white border-gray-300"
+                                >
+                                    <ChevronLeft size={16} className="mr-1" /> Prev
+                                </Button>
+                                <div className="text-sm font-medium px-2 py-1 bg-white border border-gray-300 rounded-md">
+                                    Page {currentPage} of {totalPages}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="bg-white border-gray-300"
+                                >
+                                    Next <ChevronRight size={16} className="ml-1" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

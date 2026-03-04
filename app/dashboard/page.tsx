@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
+import { UnreturnedBooksModal } from "./unreturned-books-modal";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -18,21 +19,34 @@ export default async function DashboardPage() {
 
     // Fetch Currently Borrowed
     const { count: borrowedNow } = await supabase
-        .from('loans')
+        .from('circulation')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'borrowed');
+        .eq('status', 'Borrowed');
 
-    // For demo purposes, fetch some active loans (usually we'd filter by due_date)
+    // Fetch active loans (top 5 for recent activity)
     const { data: activeLoans } = await supabase
-        .from('loans')
+        .from('circulation')
         .select(`
             id,
             due_date,
-            books ( title, isbn ),
-            members ( full_name )
+            books ( title, barcode, author ),
+            members ( full_name, barcode )
         `)
-        .eq('status', 'borrowed')
+        .eq('status', 'Borrowed')
+        .order('borrow_date', { ascending: false })
         .limit(5);
+
+    // Fetch ALL active loans for the modal
+    const { data: allActiveLoans } = await supabase
+        .from('circulation')
+        .select(`
+            id,
+            due_date,
+            books ( title, barcode, author ),
+            members ( full_name, barcode )
+        `)
+        .eq('status', 'Borrowed')
+        .order('borrow_date', { ascending: false });
 
     return (
         <div className="space-y-6 w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8 pt-16 md:pt-20">
@@ -115,9 +129,7 @@ export default async function DashboardPage() {
                         <CardTitle>UNRETURNED BOOKS</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center justify-center h-full min-h-[120px] text-gray-500 border-2 border-dashed rounded-md">
-                            <span className="underline cursor-pointer hover:text-black">View All Unreturned Books</span>
-                        </div>
+                        <UnreturnedBooksModal loans={allActiveLoans || []} />
                     </CardContent>
                 </Card>
             </div>

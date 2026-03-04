@@ -35,8 +35,9 @@ export default function Navigation() {
 
     const allNavItems = [
         { href: '/', label: 'Home', icon: Home, restrict: 'both' },
-        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, restrict: 'librarian' },
-        { href: '/member/dashboard-mem', label: 'My Dashboard', icon: Heart, restrict: 'member' },
+        { href: '/dashboard', label: 'System Dashboard', icon: LayoutDashboard, restrict: 'librarian' },
+        { href: '/member/dashboard-mem', label: 'My Dashboard', icon: LayoutDashboard, restrict: 'member' },
+        { href: '/member/favorites', label: 'Favorites', icon: Heart, restrict: 'member' },
         { href: '/catalog', label: 'Catalog', icon: BookOpen, restrict: 'both' },
         { href: '/check', label: 'Check In/Out', icon: CheckSquare, restrict: 'librarian' },
         { href: '/books', label: 'Management', icon: FileBox, restrict: 'librarian' },

@@ -1,0 +1,91 @@
+﻿
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\books\page.tsx
+  127:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\catalog\catalog-client.tsx
+  17:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\catalog\catalog-client.tsx:17:9
+  15 |
+  16 |     useEffect(() => {
+> 17 |         setIsLibrarian(localStorage.getItem('userRole') === 'librarian');
+     |         ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  18 |     }, []);
+  19 |
+  20 |     const toggleFavorite = (id: string) => {  react-hooks/set-state-in-effect
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\dashboard\page.tsx
+  89:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\history\page.tsx
+  5:10  warning  'Badge' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\member\dashboard-mem\page.tsx
+  2:20  warning  'AlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\members\page.tsx
+  7:10  warning  'Select' is defined but never used         @typescript-eslint/no-unused-vars
+  7:18  warning  'SelectContent' is defined but never used  @typescript-eslint/no-unused-vars
+  7:33  warning  'SelectItem' is defined but never used     @typescript-eslint/no-unused-vars
+  7:45  warning  'SelectTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+  7:60  warning  'SelectValue' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\page.tsx
+   19:91   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  125:80   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  125:101  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  226:53   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\app\transactions\page.tsx
+  4:41  warning  'CardTitle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\components\layout\Navigation.tsx
+  19:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\components\layout\Navigation.tsx:19:9
+  17 |
+  18 |     useEffect(() => {
+> 19 |         setIsMounted(true);
+     |         ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  20 |         setUserRole(localStorage.getItem('userRole'));
+  21 |     }, [pathname]);
+  22 |                                        react-hooks/set-state-in-effect
+  25:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\components\layout\Navigation.tsx:25:9
+  23 |     // Close mobile menu when navigating
+  24 |     useEffect(() => {
+> 25 |         setIsMobileOpen(false);
+     |         ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |     }, [pathname]);
+  27 |
+  28 |     // Hide navigation on public/auth routes  react-hooks/set-state-in-effect
+  34:11  warning  'isGuest' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\lib\supabase\actions.ts
+  149:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adhil M\OneDrive\Documents\Desktop\work\antigravity\LIBRARY SOFTWARE\lib\supabase\server.ts
+  1:35  warning  'CookieOptions' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 21 problems (11 errors, 10 warnings)
+

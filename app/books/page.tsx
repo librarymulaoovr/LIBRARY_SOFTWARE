@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, UploadCloud, PlusCircle, Edit, Search } from "lucide-react";
 import { useState, useRef } from "react";
-import { addBook, updateBook, deleteBooks, getBookByBarcode } from "@/lib/supabase/actions";
+import Papa from "papaparse";
+import { addBook, updateBook, deleteBooks, getBookByBarcode, bulkAddBooks } from "@/lib/supabase/actions";
 
 export default function BookManagementPage() {
     const [isEditing, setIsEditing] = useState(false);
 
     // UI States
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     // Form Refs
@@ -109,6 +111,63 @@ export default function BookManagementPage() {
             (e.target as HTMLFormElement).reset();
         }
         setLoading(false);
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        setMessage(null);
+
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: async (results) => {
+                const booksData = results.data as Record<string, unknown>[];
+                if (booksData.length === 0) {
+                    setMessage({ type: 'error', text: "CSV file is empty or invalid." });
+                    setUploading(false);
+                    return;
+                }
+
+                const res = await bulkAddBooks(booksData);
+
+                if (res.error) {
+                    setMessage({ type: 'error', text: res.error });
+                } else if (res.success) {
+                    setMessage({ type: 'success', text: res.message || "Bulk upload successful!" });
+                }
+                setUploading(false);
+                if (e.target) e.target.value = ''; // Reset input
+            },
+            error: (error: Error) => {
+                setMessage({ type: 'error', text: `Failed to parse CSV: ${error.message}` });
+                setUploading(false);
+            }
+        });
+    };
+
+    const handleDownloadTemplate = () => {
+        const headers = ["title", "author", "language", "category", "shelf_location", "call_number", "barcode"];
+        const exampleRow = ["The Great Gatsby", "F. Scott Fitzgerald", "English", "Fiction", "A1", "800-FIC", "B-001"];
+
+        const csvContent = [
+            headers.join(","),
+            exampleRow.join(",")
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute("href", url);
+        link.setAttribute("download", "book_upload_template.csv");
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     return (
@@ -221,19 +280,35 @@ export default function BookManagementPage() {
                 </Card>
 
                 <div className="space-y-8">
-                    {/* Bulk Upload (Mockup) */}
-                    <Card className="shadow-sm opacity-60">
+                    {/* Bulk Upload */}
+                    <Card className="shadow-sm">
                         <CardHeader className="pb-4">
-                            <CardTitle className="flex items-center gap-2">
-                                <UploadCloud size={20} className="text-gray-600" />
-                                BULK UPLOAD BOOKS (Coming Soon)
+                            <CardTitle className="flex items-center justify-between">
+                                <span className="flex items-center gap-2">
+                                    <UploadCloud size={20} className="text-blue-600" />
+                                    BULK UPLOAD BOOKS (CSV)
+                                </span>
+                                <button
+                                    onClick={handleDownloadTemplate}
+                                    type="button"
+                                    className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
+                                >
+                                    Download Template
+                                </button>
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="border-2 border-dashed border-gray-300 bg-gray-50 rounded-lg p-10 text-center flex flex-col items-center justify-center cursor-not-allowed">
-                                <UploadCloud className="text-gray-400 mb-2" size={36} />
-                                <p className="text-sm font-medium text-gray-600">Drag & Drop CSV/Excel file here</p>
-                                <Button variant="outline" disabled className="mt-4 border-gray-300">Browse Files</Button>
+                            <div className="border-2 border-dashed border-gray-300 bg-gray-50 rounded-lg p-10 text-center flex flex-col items-center justify-center">
+                                <UploadCloud className="text-blue-400 mb-2" size={36} />
+                                <p className="text-sm font-medium text-gray-600 mb-4">Select a CSV file to upload multiple books</p>
+                                <Input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={handleFileUpload}
+                                    disabled={uploading}
+                                    className="max-w-xs cursor-pointer text-sm"
+                                />
+                                {uploading && <p className="text-sm font-bold text-blue-600 mt-3 animate-pulse">Uploading and adding to catalog...</p>}
                             </div>
                         </CardContent>
                     </Card>

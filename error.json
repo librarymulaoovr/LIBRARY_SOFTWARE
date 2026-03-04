@@ -1,0 +1,6 @@
+{
+  "code": "23503",
+  "details": "Key is not present in table \"users\".",
+  "hint": null,
+  "message": "insert or update on table \"members\" violates foreign key constraint \"members_id_fkey\""
+}

@@ -5,17 +5,39 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CreditCard, KeyRound } from "lucide-react";
 import Link from "next/link";
+import { loginMember } from "@/lib/supabase/actions";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function MemberLogin() {
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // In a real app, perform auth here.
-        localStorage.setItem('userRole', 'member');
-        // For now, just redirect to the member dashboard.
-        router.push('/member/dashboard-mem');
+        setLoading(true);
+        setErrorMsg("");
+
+        const formData = new FormData(e.currentTarget);
+        const barcode = formData.get("barcode") as string;
+        const password = formData.get("password") as string;
+
+        const res = await loginMember(barcode, password);
+
+        if (res.error) {
+            setErrorMsg(res.error);
+            setLoading(false);
+            return;
+        }
+
+        if (res.success && res.member) {
+            localStorage.setItem('userRole', 'member');
+            localStorage.setItem('memberBarcode', res.member.barcode || "");
+            localStorage.setItem('memberName', res.member.full_name || "");
+
+            router.push('/member/dashboard-mem');
+        }
     };
 
     return (
@@ -29,15 +51,22 @@ export default function MemberLogin() {
                 </CardHeader>
                 <form onSubmit={handleLogin}>
                     <CardContent className="space-y-4">
+                        {errorMsg && (
+                            <div className="p-3 bg-red-100 text-red-800 text-sm font-medium rounded-md border border-red-200">
+                                {errorMsg}
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <div className="relative">
                                 <CreditCard className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                                 <Input
                                     id="barcode"
+                                    name="barcode"
                                     placeholder="Barcode (e.g., M-5001)"
                                     autoCapitalize="none"
                                     autoCorrect="off"
                                     required
+                                    disabled={loading}
                                     className="pl-10"
                                 />
                             </div>
@@ -46,19 +75,20 @@ export default function MemberLogin() {
                             <div className="relative">
                                 <KeyRound className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                                 <Input
-                                    id="pin"
+                                    id="password"
+                                    name="password"
                                     type="password"
-                                    placeholder="4-Digit PIN"
-                                    maxLength={4}
+                                    placeholder="Password"
                                     required
+                                    disabled={loading}
                                     className="pl-10"
                                 />
                             </div>
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4">
-                        <Button className="w-full bg-blue-500 text-white hover:bg-blue-600 font-bold py-6 text-md" type="submit">
-                            ACCESS MY ACCOUNT
+                        <Button disabled={loading} className="w-full bg-blue-500 text-white hover:bg-blue-600 font-bold py-6 text-md" type="submit">
+                            {loading ? "VERIFYING..." : "ACCESS MY ACCOUNT"}
                         </Button>
                         <div className="text-sm text-center text-gray-500">
                             <Link href="/" className="hover:text-black underline underline-offset-4">
