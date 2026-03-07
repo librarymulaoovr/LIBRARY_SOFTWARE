@@ -16,55 +16,57 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen overflow-x-hidden w-full max-w-[100vw] bg-gradient-to-b from-[#0f172a] via-[#1e1b4b] to-[#020617]">
 
       {/* 1. HERO SECTION */}
-      <section className="relative w-full flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24">
+      <section className="relative w-full min-h-[100dvh] flex flex-col items-center justify-center text-center px-4 py-8 sm:py-24">
         {/* Decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-full z-0 opacity-20 pointer-events-none">
           <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-600 blur-3xl"></div>
           <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-yellow-600 blur-[100px]"></div>
         </div>
-        <div className="z-10 w-full max-w-5xl space-y-6 md:space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 flex flex-col items-center">
-          <h2 className={`${malayalamFont.className} text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight drop-shadow-2xl leading-[1.2] px-4 text-center`}>
-            {/* Desktop view: "വിജ്ഞാനപോഷിണിയിലേക്ക്" on one line */}
-            <span className="hidden sm:inline text-white drop-shadow-lg">വിജ്ഞാനപോഷിണി</span>
+        <div className="z-10 w-full max-w-5xl space-y-4 md:space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 flex flex-col items-center justify-center flex-1">
+          <div className="flex flex-col items-center space-y-4 md:space-y-6">
+            <h2 className={`${malayalamFont.className} text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight drop-shadow-2xl leading-[1.2] px-4 text-center`}>
+              {/* Desktop view: "വിജ്ഞാനപോഷിണിയിലേക്ക്" on one line */}
+              <span className="hidden sm:inline text-white drop-shadow-lg">വിജ്ഞാനപോഷിണി</span>
 
-            {/* Mobile view: "വിജ്ഞാന" on one line, "പോഷിണിയിലേക്ക്" on the next line */}
-            <span className="sm:hidden text-white drop-shadow-lg block">വിജ്ഞാന</span>
-            <span className="sm:hidden text-white drop-shadow-lg block">പോഷിണി</span>
+              {/* Mobile view: "വിജ്ഞാന" on one line, "പോഷിണി" on the next line */}
+              <span className="sm:hidden text-white drop-shadow-lg block">വിജ്ഞാന</span>
+              <span className="sm:hidden text-white drop-shadow-lg block">പോഷിണി</span>
 
-            <br className="hidden sm:block" />
+              <br className="hidden sm:block" />
 
-            {/* "സ്വാഗതം" hidden on mobile, shown on desktop */}
-            <span className="hidden sm:inline-block text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-500 drop-shadow-xl mt-2 sm:mt-4 py-2">
-              ഗ്രന്ഥശാല
-            </span>
-          </h2>
-          <p className={`${malayalamFont.className} text-sm sm:text-base md:text-lg lg:text-xl text-blue-100 max-w-4xl mx-auto font-medium drop-shadow-md px-4 leading-relaxed text-center`}>
-            നാടിന്റെ അറിവുകൂടാരത്തിലേക്ക് സ്വാഗതം.ലൈബ്രറിയിലെ <br className="hidden md:block" />
-            ആയിരക്കണക്കിന് പുസ്തകങ്ങളിൽ നിന്ന് നിങ്ങൾക്കിഷ്ടമുള്ളവ കണ്ടെത്താനും<br className="hidden md:block" />
-            നിങ്ങളുടെ വായനായാത്ര കൂടുതൽ എളുപ്പമാക്കാനും ഈ വെബ്സൈറ്റ് സഹായിക്കും.
-          </p>
+              {/* "ഗ്രന്ഥശാല" hidden on mobile, shown on desktop */}
+              <span className="hidden sm:inline-block text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-500 drop-shadow-xl mt-2 sm:mt-4 py-2">
+                ഗ്രന്ഥശാല
+              </span>
+            </h2>
+            <p className={`${malayalamFont.className} text-xs sm:text-base md:text-lg lg:text-xl text-blue-100 max-w-2xl mx-auto font-medium drop-shadow-md px-4 leading-relaxed text-center`}>
+              നാടിന്റെ അറിവുകൂടാരത്തിലേക്ക് സ്വാഗതം.ലൈബ്രറിയിലെ <br className="hidden md:block" />
+              ആയിരക്കണക്കിന് പുസ്തകങ്ങളിൽ നിന്ന് നിങ്ങൾക്കിഷ്ടമുള്ളവ കണ്ടെത്താനും<br className="hidden md:block" />
+              നിങ്ങളുടെ വായനായാത്ര കൂടുതൽ എളുപ്പമാക്കാനും ഈ വെബ്സൈറ്റ് സഹായിക്കും.
+            </p>
+          </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 w-full px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4 w-full px-4 max-w-sm sm:max-w-none">
             <Link href="/catalog" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto bg-yellow-400 text-black hover:bg-yellow-500 font-bold px-8 py-6 text-base sm:text-lg shadow-[0_0_15px_rgba(250,204,21,0.2)] transition-all">
-                <BookOpen className="mr-2" size={24} />
+              <Button size="lg" className="w-full sm:w-auto bg-yellow-400 text-black hover:bg-yellow-500 font-bold px-8 py-5 text-sm sm:text-lg shadow-[0_0_15px_rgba(250,204,21,0.2)] transition-all">
+                <BookOpen className="mr-2" size={20} />
                 Browse Catalog
               </Button>
             </Link>
-            <Link href="/login" className="w-full sm:w-auto mt-4 sm:mt-0">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 py-6 text-base sm:text-lg font-bold bg-white/10 text-white hover:bg-white/20 hover:text-white border-white/30 backdrop-blur-sm transition-all">
+            <Link href="/login" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 py-5 text-sm sm:text-lg font-bold bg-white/10 text-white hover:bg-white/20 hover:text-white border-white/30 backdrop-blur-sm transition-all">
                 Librarian Login
               </Button>
             </Link>
           </div>
 
-          <div className="pt-12 flex flex-col items-center gap-6">
-            <p className="text-gray-300 bg-black/40 inline-block px-6 py-2 rounded-full border border-white/10 backdrop-blur-md shadow-lg">
-              Are you a member? <Link href="/member-login" className="text-yellow-400 font-semibold hover:underline ml-2 hover:text-yellow-300 transition-colors">Login here</Link>
+          <div className="pt-8 flex flex-col items-center gap-4">
+            <p className="text-sm text-gray-300 bg-black/40 inline-block px-5 py-2 rounded-full border border-white/10 backdrop-blur-md shadow-lg">
+              Are you a member? <Link href="/member-login" className="text-yellow-400 font-semibold hover:underline ml-1 hover:text-yellow-300 transition-colors">Login here</Link>
             </p>
 
             {/* Elegant Watermark */}
-            <div className="group flex items-center gap-3 text-[10px] sm:text-xs text-gray-500/60 font-medium tracking-[0.2em] uppercase mt-2 transition-all duration-500 hover:text-gray-400">
+            <div className="group flex items-center gap-3 text-[9px] sm:text-xs text-gray-500/60 font-medium tracking-[0.2em] uppercase transition-all duration-500 hover:text-gray-400">
               <span className="w-6 sm:w-12 h-[1px] bg-gradient-to-r from-transparent to-gray-500/40 group-hover:to-yellow-500/40 transition-colors duration-500"></span>
               <span>Created by <Link href="https://www.instagram.com/ad.x_il/" target="_blank" rel="noopener noreferrer" className="text-gray-400 group-hover:text-yellow-400 transition-colors duration-300">Adhil</Link></span>
               <span className="w-6 sm:w-12 h-[1px] bg-gradient-to-l from-transparent to-gray-500/40 group-hover:from-yellow-500/40 transition-colors duration-500"></span>
