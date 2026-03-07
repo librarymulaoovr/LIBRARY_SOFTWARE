@@ -1,0 +1,17 @@
+{
+    "name": "Vijnana Poshini Grandhasala",
+    "short_name": "VP Library",
+    "description": "Library Management System for Vijnana Poshini Grandhasala Mulavoor",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#facc15",
+    "icons": [
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

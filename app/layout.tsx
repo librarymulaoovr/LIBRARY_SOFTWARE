@@ -6,8 +6,16 @@ import Navigation from '@/components/layout/Navigation';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ADHIL Library',
-  description: 'ADHIL Library Management System',
+  title: 'Vijnana Poshini Grandhasala',
+  description: 'Digital management system for Mulavoor Vijnana Poshini Library',
+  manifest: '/manifest.json',
+};
+
+export const viewport = {
+  themeColor: '#0f172a',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -19,7 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} min-h-screen flex`}>
         <Navigation />
-        <main className="flex-1 flex flex-col min-h-screen min-w-0">
+        <main className="flex-1 flex flex-col min-h-screen min-w-0 bg-[#0f172a]">
           <div className="flex-1 w-full min-w-0">
             {children}
           </div>

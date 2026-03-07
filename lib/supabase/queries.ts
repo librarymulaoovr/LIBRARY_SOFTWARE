@@ -41,7 +41,7 @@ export async function getBooks() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching books:', error);
+        console.error('Error fetching books:', error.message || error);
         return [];
     }
 
@@ -57,7 +57,7 @@ export async function getRecentBooks(limit: number = 5) {
         .limit(limit);
 
     if (error) {
-        console.error('Error fetching recent books:', error);
+        console.error('Error fetching recent books:', error.message || error);
         return [];
     }
 
@@ -72,7 +72,7 @@ export async function getMembers() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching members:', error);
+        console.error('Error fetching members:', error.message || error);
         return [];
     }
 
@@ -89,7 +89,7 @@ export async function searchBooksClient(query: string) {
         .order('title');
 
     if (error) {
-        console.error('Error searching books:', error);
+        console.error('Error searching books:', error.message || error);
         return [];
     }
 
@@ -122,7 +122,7 @@ export async function getTopReaders() {
         `);
 
     if (error || !records) {
-        console.error("Error fetching for top readers:", error);
+        console.error("Error fetching for top readers:", error?.message || error);
         return [];
     }
 
@@ -158,7 +158,7 @@ export async function getPopularBooks() {
         `);
 
     if (error || !records) {
-        console.error("Error fetching for popular books:", error);
+        console.error("Error fetching for popular books:", error?.message || error);
         return [];
     }
 

@@ -26,8 +26,9 @@ export default function CirculationPage() {
 
         const memberBarcode = formData.get("memberBarcode") as string;
         const bookBarcode = formData.get("bookBarcode") as string;
+        const transactionDate = formData.get("transactionDate") as string;
 
-        const res = await processCheckOut(memberBarcode, bookBarcode);
+        const res = await processCheckOut(memberBarcode, bookBarcode, transactionDate);
 
         if (res.error) {
             setMessageOut({ type: 'error', text: res.error });
@@ -47,8 +48,9 @@ export default function CirculationPage() {
         setMessageIn(null);
 
         const bookBarcode = formData.get("bookBarcode") as string;
+        const transactionDate = formData.get("transactionDate") as string;
 
-        const res = await processCheckIn(bookBarcode);
+        const res = await processCheckIn(bookBarcode, transactionDate);
 
         if (res.error) {
             setMessageIn({ type: 'error', text: res.error });
@@ -64,8 +66,9 @@ export default function CirculationPage() {
         setMessageRenew(null);
 
         const bookBarcode = formData.get("bookBarcode") as string;
+        const transactionDate = formData.get("transactionDate") as string;
 
-        const res = await processRenew(bookBarcode);
+        const res = await processRenew(bookBarcode, transactionDate);
 
         if (res.error) {
             setMessageRenew({ type: 'error', text: res.error });
@@ -120,6 +123,10 @@ export default function CirculationPage() {
                                     <label className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider">Book Barcode</label>
                                     <Input name="bookBarcode" required placeholder="Scan book barcode" className="bg-gray-50 h-14 text-base sm:text-lg" />
                                 </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider">Transaction Date (Optional)</label>
+                                    <Input type="date" name="transactionDate" className="bg-gray-50 h-14 text-base sm:text-lg" />
+                                </div>
                                 <Button disabled={loadingOut} type="submit" className="w-full bg-yellow-400 text-black hover:bg-yellow-500 font-extrabold mt-4 h-16 text-lg sm:text-xl shadow-md transition-all">
                                     {loadingOut ? "PROCESSING..." : "PROCESS CHECKOUT"}
                                 </Button>
@@ -144,6 +151,10 @@ export default function CirculationPage() {
                                 <div className="space-y-3">
                                     <label className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider">Book Barcode</label>
                                     <Input name="bookBarcode" required placeholder="Scan book barcode to return" className="bg-gray-50 h-14 text-base sm:text-lg" />
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider">Transaction Date (Optional)</label>
+                                    <Input type="date" name="transactionDate" className="bg-gray-50 h-14 text-base sm:text-lg" />
                                 </div>
                                 <Button disabled={loadingIn} type="submit" className="w-full bg-yellow-400 text-black hover:bg-yellow-500 font-extrabold mt-4 h-16 text-lg sm:text-xl shadow-md transition-all">
                                     {loadingIn ? "PROCESSING..." : "PROCESS RETURN"}
@@ -176,6 +187,10 @@ export default function CirculationPage() {
                                 <div className="space-y-3">
                                     <label className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider">Book Barcode</label>
                                     <Input name="bookBarcode" required placeholder="Scan book barcode to renew" className="bg-gray-50 h-14 text-base sm:text-lg" />
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider">Transaction Date (Optional)</label>
+                                    <Input type="date" name="transactionDate" className="bg-gray-50 h-14 text-base sm:text-lg" />
                                 </div>
                                 <Button disabled={loadingRenew} type="submit" className="w-full bg-yellow-400 text-black hover:bg-yellow-500 font-extrabold mt-4 h-16 text-lg sm:text-xl shadow-md transition-all">
                                     {loadingRenew ? "PROCESSING..." : "RENEW BOOK"}

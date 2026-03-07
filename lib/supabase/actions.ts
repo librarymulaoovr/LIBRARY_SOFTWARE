@@ -334,7 +334,7 @@ export async function deleteMember(id: string) {
     return { success: true, message: "Patron successfully deleted!" };
 }
 
-export async function processCheckOut(memberBarcode: string, bookBarcode: string) {
+export async function processCheckOut(memberBarcode: string, bookBarcode: string, transactionDateStr?: string | null) {
     const supabase = await createClient();
 
     // 1. Verify Member
@@ -356,8 +356,8 @@ export async function processCheckOut(memberBarcode: string, bookBarcode: string
     if (bookErr || !book) return { error: "Book not found. Please check barcode." };
     if (book.available_copies <= 0) return { error: "No available copies for this book currently." };
 
-    const borrowDate = new Date();
-    const dueDate = new Date();
+    const borrowDate = transactionDateStr ? new Date(`${transactionDateStr}T12:00:00`) : new Date();
+    const dueDate = new Date(borrowDate);
     dueDate.setDate(dueDate.getDate() + 30);
 
     // 3. Insert Circulation Record
@@ -397,7 +397,7 @@ export async function processCheckOut(memberBarcode: string, bookBarcode: string
     };
 }
 
-export async function processCheckIn(bookBarcode: string) {
+export async function processCheckIn(bookBarcode: string, transactionDateStr?: string | null) {
     const supabase = await createClient();
 
     // 1. Find Book
@@ -426,7 +426,7 @@ export async function processCheckIn(bookBarcode: string) {
         .from("circulation")
         .update({
             status: "Returned",
-            return_date: new Date().toISOString()
+            return_date: transactionDateStr ? new Date(`${transactionDateStr}T12:00:00`).toISOString() : new Date().toISOString()
         })
         .eq("id", circRecord.id);
 
@@ -550,7 +550,7 @@ export async function getMemberDashboardStats(memberBarcode: string) {
     };
 }
 
-export async function processRenew(bookBarcode: string) {
+export async function processRenew(bookBarcode: string, transactionDateStr?: string | null) {
     const supabase = await createClient();
 
     // 1. Find Book
@@ -580,7 +580,8 @@ export async function processRenew(bookBarcode: string) {
 
     // 3. Calculate New Due Date (+30 days from the current due date, or from today?)
     // Given the user description "if a member has not completed reading within 30 days... extend due date". Let's extend it 30 days from today.
-    const newDueDate = new Date();
+    const baseDate = transactionDateStr ? new Date(`${transactionDateStr}T12:00:00`) : new Date();
+    const newDueDate = new Date(baseDate);
     newDueDate.setDate(newDueDate.getDate() + 30);
 
     // 4. Update Circulation Record

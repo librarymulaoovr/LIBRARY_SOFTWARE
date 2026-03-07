@@ -3,7 +3,8 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CreditCard, KeyRound } from "lucide-react";
+import { CreditCard, KeyRound, Phone, Mail, UserRound } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Link from "next/link";
 import { loginMember } from "@/lib/supabase/actions";
 import { useState } from "react";
@@ -41,7 +42,7 @@ export default function MemberLogin() {
     };
 
     return (
-        <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="min-h-[80vh] flex items-center justify-center px-4 sm:px-0">
             <Card className="w-full max-w-md shadow-lg border-t-8 border-t-blue-500">
                 <CardHeader className="space-y-1 text-center">
                     <CardTitle className="text-2xl font-bold tracking-tight uppercase">Member Login</CardTitle>
@@ -84,9 +85,46 @@ export default function MemberLogin() {
                                     className="pl-10"
                                 />
                             </div>
+                            <div className="flex justify-center pt-2">
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <button type="button" className="text-sm font-medium text-blue-600 hover:text-blue-500 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded">
+                                            Forgot password?
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md bg-white border border-gray-100 shadow-xl rounded-xl">
+                                        <DialogHeader className="space-y-3">
+                                            <DialogTitle className="text-xl font-bold text-gray-900 border-b pb-3">Account Recovery</DialogTitle>
+                                            <DialogDescription asChild>
+                                                <div className="pt-2 text-base text-gray-600 leading-relaxed text-left">
+                                                    <p>
+                                                        For security reasons, member accounts do not have automated password resets.
+                                                        Please contact the library administration to update your password.
+                                                    </p>
+
+                                                    <div className="mt-5 space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                                        <div className="flex items-center gap-3 text-gray-800">
+                                                            <UserRound className="w-5 h-5 text-blue-500 shrink-0" />
+                                                            <span><span className="font-semibold text-gray-900">Chief Librarian:</span> Binu</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-gray-800">
+                                                            <Phone className="w-5 h-5 text-green-500 shrink-0" />
+                                                            <a href="tel:+919605659222" className="hover:text-blue-600 transition-colors font-medium">+91 9605659222</a>
+                                                        </div>
+                                                        <div className="flex items-start gap-3 text-gray-800">
+                                                            <Mail className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+                                                            <a href="mailto:vinjanaposhinigrandhasalamulav@gmail.com" className="hover:text-blue-600 transition-colors font-medium break-all">vinjanaposhinigrandhasalamulav@gmail.com</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col space-y-4">
+                    <CardFooter className="flex flex-col space-y-4 pt-6">
                         <Button disabled={loading} className="w-full bg-blue-500 text-white hover:bg-blue-600 font-bold py-6 text-md" type="submit">
                             {loading ? "VERIFYING..." : "ACCESS MY ACCOUNT"}
                         </Button>

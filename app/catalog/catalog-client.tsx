@@ -13,7 +13,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Search, Heart, Edit, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Heart, Edit } from "lucide-react";
 import { updateBook } from "@/lib/supabase/actions";
 import type { Book } from "@/lib/supabase/queries";
 
@@ -28,21 +28,10 @@ export default function CatalogClient({ initialBooks }: { initialBooks: Book[] }
     const [editLoading, setEditLoading] = useState(false);
     const [editMessage, setEditMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    // Pagination State
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [isMobile, setIsMobile] = useState(false);
+
 
     useEffect(() => {
         setIsLibrarian(localStorage.getItem('userRole') === 'librarian');
-
-        // Handle responsive pagination
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 640);
-        };
-
-        checkMobile(); // Check on mount
-        window.addEventListener('resize', checkMobile);
 
         // Load favorites from local storage
         const storedFavorites = localStorage.getItem('memberFavorites');
@@ -54,19 +43,9 @@ export default function CatalogClient({ initialBooks }: { initialBooks: Book[] }
             }
         }
 
-        return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Effect to update itemsPerPage based on mobile state and total books
-    useEffect(() => {
-        if (isMobile) {
-            // Show all books on mobile
-            setItemsPerPage(Math.max(1, filtered.length));
-        } else {
-            // Default 10 on desktop
-            setItemsPerPage(10);
-        }
-    }, [isMobile, initialBooks.length]);
+
 
     const toggleFavorite = (id: string) => {
         setFavorites((prev) => {
@@ -83,16 +62,7 @@ export default function CatalogClient({ initialBooks }: { initialBooks: Book[] }
         (book.isbn && book.isbn.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    // Reset to page 1 when search query changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchQuery]);
 
-    const totalPages = Math.ceil(filtered.length / itemsPerPage);
-    const paginatedBooks = filtered.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
 
     const handleEditSubmit = async (formData: FormData) => {
         if (!editingBook) return;
@@ -153,7 +123,7 @@ export default function CatalogClient({ initialBooks }: { initialBooks: Book[] }
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {paginatedBooks.map((book) => {
+                            {filtered.map((book) => {
                                 const isAvailable = book.available_copies > 0;
 
                                 return (
@@ -225,37 +195,7 @@ export default function CatalogClient({ initialBooks }: { initialBooks: Book[] }
                 </div>
             </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
-                    <div className="text-sm text-center sm:text-left text-gray-500">
-                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} books
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                            disabled={currentPage === 1}
-                            className="bg-white border-gray-300"
-                        >
-                            <ChevronLeft size={16} className="mr-1" /> Prev
-                        </Button>
-                        <div className="text-sm font-medium px-2 py-1 bg-white border border-gray-300 rounded-md">
-                            Page {currentPage} of {totalPages}
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                            disabled={currentPage === totalPages}
-                            className="bg-white border-gray-300"
-                        >
-                            Next <ChevronRight size={16} className="ml-1" />
-                        </Button>
-                    </div>
-                </div>
-            )}
+
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

@@ -54,7 +54,7 @@ export default function Navigation() {
         return false; // Guests only see 'both'
     });
 
-    const portalName = isMember ? "MEMBER PORTAL" : isLibrarian ? "LIBRARIAN PORTAL" : "PMSA LIBRARY";
+    const portalName = isMember ? "MEMBER PORTAL" : isLibrarian ? "LIBRARIAN PORTAL" : "VIGJNANA POSHINI ";
 
     return (
         <>
