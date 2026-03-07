@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} min-h-screen flex`}>
         <Navigation />
-        <main className="flex-1 flex flex-col min-h-screen min-w-0 bg-[#0f172a]">
+        <main className="flex-1 flex flex-col min-h-screen min-w-0">
           <div className="flex-1 w-full min-w-0">
             {children}
           </div>
