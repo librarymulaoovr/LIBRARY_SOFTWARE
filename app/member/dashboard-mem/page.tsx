@@ -22,6 +22,20 @@ export default function MemberDashboardPage() {
     const [allBooks, setAllBooks] = useState<any[]>([]);
     const [openModal, setOpenModal] = useState<"read" | "borrowed" | "returned" | null>(null);
 
+    const fetchDashboard = async () => {
+        const barcode = localStorage.getItem('memberBarcode');
+        if (!barcode) return;
+        setLoading(true);
+        const res = await getMemberDashboardStats(barcode as string);
+        if (res.success && res.stats) {
+            setStats(res.stats);
+            if (res.activeBorrows) setActiveBorrows(res.activeBorrows);
+            if (res.returnedBooks) setReturnedBooks(res.returnedBooks);
+            if (res.allBooks) setAllBooks(res.allBooks);
+        }
+        setLoading(false);
+    };
+
     useEffect(() => {
         const barcode = localStorage.getItem('memberBarcode');
         const name = localStorage.getItem('memberName');
@@ -32,18 +46,6 @@ export default function MemberDashboardPage() {
         }
 
         if (name) setMemberName(name);
-
-        async function fetchDashboard() {
-            setLoading(true);
-            const res = await getMemberDashboardStats(barcode as string);
-            if (res.success && res.stats) {
-                setStats(res.stats);
-                if (res.activeBorrows) setActiveBorrows(res.activeBorrows);
-                if (res.returnedBooks) setReturnedBooks(res.returnedBooks);
-                if (res.allBooks) setAllBooks(res.allBooks);
-            }
-            setLoading(false);
-        }
 
         fetchDashboard();
     }, [router]);
@@ -118,9 +120,10 @@ export default function MemberDashboardPage() {
 
                                 return (
                                     <div key={borrow.id} className={`flex justify-between items-center p-4 border rounded-lg bg-gray-50 border-l-4 ${isOverdue ? 'border-l-red-600' : isDueSoon ? 'border-l-yellow-400' : 'border-l-green-500'}`}>
-                                        <div>
+                                        <div className="flex-1">
                                             <h3 className="font-bold">{borrow.books?.title || "Unknown Book"}</h3>
                                             <p className="text-sm text-gray-500">{borrow.books?.author || "Unknown Author"}</p>
+                                            <p className="text-xs text-blue-500 font-semibold mt-1 uppercase">Return Date: {new Date(borrow.due_date).toLocaleDateString()}</p>
                                         </div>
                                         <div className="text-right">
                                             <p className={`text-sm font-semibold ${isOverdue ? 'text-red-600' : isDueSoon ? 'text-orange-500' : 'text-green-600'}`}>
@@ -166,17 +169,18 @@ export default function MemberDashboardPage() {
                             return (
                                 <div key={t.id} className={`p-3 border rounded-lg bg-gray-50 border-l-4 ${isOverdue ? 'border-l-red-600' : 'border-l-blue-500'}`}>
                                     <div className="flex justify-between items-start">
-                                        <div>
+                                        <div className="flex-1">
                                             <h3 className="font-bold">{t.books?.title || "Unknown Book"}</h3>
                                             <p className="text-sm text-gray-500">Author: {t.books?.author}</p>
+                                            <p className="text-xs text-blue-500 font-semibold mt-1 uppercase">Return Date: {new Date(t.due_date).toLocaleDateString()}</p>
+                                            <p className="text-xs text-gray-400 mt-1">Borrowed: {new Date(t.borrow_date).toLocaleDateString()}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className={`text-sm font-semibold ${isOverdue ? 'text-red-600' : 'text-green-600'}`}>
+                                            <p className={`text-sm font-semibold ${isOverdue ? 'text-red-600' : t.daysUntilDue <= 7 && t.daysUntilDue >= 0 ? 'text-orange-500' : 'text-green-600'}`}>
                                                 {isOverdue ? `Overdue by ${Math.abs(t.daysUntilDue)} days` : `Due in ${t.daysUntilDue} days`}
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="text-xs text-gray-400 mt-1">Borrowed: {new Date(t.borrow_date).toLocaleDateString()}</p>
                                 </div>
                             );
                         })}
