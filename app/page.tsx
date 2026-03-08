@@ -39,10 +39,8 @@ export default async function Home() {
                 ഗ്രന്ഥശാല
               </span>
             </h2>
-            <p className={`${malayalamFont.className} text-xs sm:text-base md:text-lg lg:text-xl text-blue-100 max-w-2xl mx-auto font-medium drop-shadow-md px-4 leading-relaxed text-center`}>
-              നാടിന്റെ അറിവുകൂടാരത്തിലേക്ക് സ്വാഗതം.ലൈബ്രറിയിലെ <br className="hidden md:block" />
-              ആയിരക്കണക്കിന് പുസ്തകങ്ങളിൽ നിന്ന് നിങ്ങൾക്കിഷ്ടമുള്ളവ കണ്ടെത്താനും<br className="hidden md:block" />
-              നിങ്ങളുടെ വായനായാത്ര കൂടുതൽ എളുപ്പമാക്കാനും ഈ വെബ്സൈറ്റ് സഹായിക്കും.
+            <p className={`${malayalamFont.className} text-xs sm:text-base md:text-lg lg:text-xl text-blue-100 max-w-4xl mx-auto font-medium drop-shadow-md px-4 leading-relaxed text-center`}>
+              നാടിന്റെ അറിവുകൂടാരത്തിലേക്ക് സ്വാഗതം. ലൈബ്രറിയിലെ ആയിരക്കണക്കിന് <br className="hidden sm:block" /> പുസ്തകങ്ങളിൽ നിന്ന് നിങ്ങൾക്കിഷ്ടമുള്ളവ കണ്ടെത്താനും നിങ്ങളുടെ <br className="hidden sm:block" /> വായനായാത്ര കൂടുതൽ എളുപ്പമാക്കാനും ഈ വെബ്സൈറ്റ് സഹായിക്കും.
             </p>
           </div>
 
