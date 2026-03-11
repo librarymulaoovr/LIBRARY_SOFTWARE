@@ -2,10 +2,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Marquee from "react-fast-marquee";
 import { BookOpen, Phone, Mail, Clock, MapPin, Users, Info } from "lucide-react";
-import { Anek_Malayalam } from "next/font/google";
-import { createClient } from "@/lib/supabase/server";
 
-const malayalamFont = Anek_Malayalam({ subsets: ['malayalam'], weight: ['400', '500', '600', '700', '800'] });
+import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -24,7 +22,7 @@ export default async function Home() {
         </div>
         <div className="z-10 w-full max-w-5xl space-y-4 md:space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 flex flex-col items-center justify-center flex-1">
           <div className="flex flex-col items-center space-y-4 md:space-y-6">
-            <h2 className={`${malayalamFont.className} text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight drop-shadow-2xl leading-[1.2] px-4 text-center`}>
+            <h2 className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight drop-shadow-2xl leading-[1.2] px-4 text-center`}>
               {/* Desktop view: "വിജ്ഞാനപോഷിണിയിലേക്ക്" on one line */}
               <span className="hidden sm:inline text-white drop-shadow-lg">വിജ്ഞാനപോഷിണി</span>
 
@@ -39,7 +37,7 @@ export default async function Home() {
                 ഗ്രന്ഥശാല
               </span>
             </h2>
-            <p className={`${malayalamFont.className} text-xs sm:text-base md:text-lg lg:text-xl text-blue-100 max-w-4xl mx-auto font-medium drop-shadow-md px-4 leading-relaxed text-center`}>
+            <p className={`text-xs sm:text-base md:text-lg lg:text-xl text-blue-100 max-w-4xl mx-auto font-medium drop-shadow-md px-4 leading-relaxed text-center`}>
               നാടിന്റെ അറിവുകൂടാരത്തിലേക്ക് സ്വാഗതം. ലൈബ്രറിയിലെ ആയിരക്കണക്കിന് <br className="hidden sm:block" /> പുസ്തകങ്ങളിൽ നിന്ന് നിങ്ങൾക്കിഷ്ടമുള്ളവ കണ്ടെത്താനും നിങ്ങളുടെ <br className="hidden sm:block" /> വായനായാത്ര കൂടുതൽ എളുപ്പമാക്കാനും ഈ വെബ്സൈറ്റ് സഹായിക്കും.
             </p>
           </div>

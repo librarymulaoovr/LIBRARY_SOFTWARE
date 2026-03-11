@@ -17,7 +17,11 @@ import { Search, Heart, Edit } from "lucide-react";
 import { updateBook } from "@/lib/supabase/actions";
 import type { Book } from "@/lib/supabase/queries";
 
-export default function CatalogClient({ initialBooks }: { initialBooks: Book[] }) {
+export default function CatalogClient({
+    initialBooks
+}: {
+    initialBooks: Book[]
+}) {
     const [searchQuery, setSearchQuery] = useState("");
     const [favorites, setFavorites] = useState<string[]>([]);
     const [isLibrarian, setIsLibrarian] = useState(false);
@@ -55,12 +59,15 @@ export default function CatalogClient({ initialBooks }: { initialBooks: Book[] }
         });
     };
 
-    // Filter based on real book data
-    const filtered = initialBooks.filter((book) =>
-        book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (book.isbn && book.isbn.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    // Filter based on real book data with Unicode normalization for better search
+    const filtered = initialBooks.filter((book) => {
+        const query = searchQuery.toLowerCase().normalize("NFC");
+        const title = book.title.toLowerCase().normalize("NFC");
+        const author = book.author.toLowerCase().normalize("NFC");
+        const isbn = (book.isbn || "").toLowerCase().normalize("NFC");
+
+        return title.includes(query) || author.includes(query) || isbn.includes(query);
+    });
 
 
 

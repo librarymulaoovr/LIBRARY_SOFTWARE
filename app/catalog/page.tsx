@@ -1,10 +1,16 @@
-import { getBooks } from "@/lib/supabase/queries";
-import CatalogClient from "./catalog-client";
+import { getBooks } from '@/lib/supabase/queries';
+import CatalogClient from './catalog-client';
+
+export const revalidate = 0;
 
 export default async function CatalogPage() {
-    // 1. Fetch data securely on the server
-    const initialBooks = await getBooks();
+    const books = await getBooks();
 
-    // 2. Pass data to the Client Component for interactive search/filtering
-    return <CatalogClient initialBooks={initialBooks} />;
+    return (
+        <div className="flex flex-col min-h-screen bg-slate-50">
+            <CatalogClient
+                initialBooks={books}
+            />
+        </div>
+    );
 }
